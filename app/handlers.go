@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"net/http"
+
+	"github.com/xvbnm48/golang-concept-microservice/service"
 )
 
 type Customer struct {
@@ -12,14 +14,16 @@ type Customer struct {
 	ZipCode string `json:"zip_code" xml:"zip_code"`
 }
 
-func greet(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World!"))
+type CustomerHandlers struct {
+	service service.CustomerService
 }
-func getAllCustomer(w http.ResponseWriter, r *http.Request) {
-	customers := []Customer{
-		{"Sakura endo", "Tokyo", "12345"},
-		{"aruno nakanishi", "Osaka", "54321"},
-	}
+
+func (ch *CustomerHandlers) getAllCustomer(w http.ResponseWriter, r *http.Request) {
+	// customers := []Customer{
+	// 	{"Sakura endo", "Tokyo", "12345"},
+	// 	{"aruno nakanishi", "Osaka", "54321"},
+	// }
+	customers, _ := ch.service.GetAllCustomer()
 
 	if r.Header.Get("Accept") == "application/xml" {
 		w.Header().Set("Content-Type", "application/xml")
