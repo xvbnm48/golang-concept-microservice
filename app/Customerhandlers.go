@@ -3,18 +3,17 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/xvbnm48/golang-concept-microservice/service"
 )
 
-type Customer struct {
-	Name    string `json:"full_name" xml:"full_name"`
-	City    string `json:"city" xml:"city"`
-	ZipCode string `json:"zip_code" xml:"zip_code"`
-}
+// type Customer struct {
+// 	Name    string `json:"full_name" xml:"full_name"`
+// 	City    string `json:"city" xml:"city"`
+// 	ZipCode string `json:"zip_code" xml:"zip_code"`
+// }
 
 type CustomerHandlers struct {
 	service service.CustomerService
@@ -46,19 +45,32 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 	id := vars["customer_id"]
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "Customer not found")
-		return
+		// w.Header().Add("Content-Type", "application/json")
+		// // fmt.Fprintf(w, "Customer not found")
+		// w.WriteHeader(err.Code)
+		// json.NewEncoder(w).Encode(err.AsMessage())
+		writeResponse(w, err.Code, err.AsMessage())
 	} else {
 		if r.Header.Get("Accept") == "application/xml" {
-			w.Header().Set("Content-Type", "application/xml")
-			xml.NewEncoder(w).Encode(customer)
+			writeResponse(w, http.StatusOK, customer)
+			// w.Header().Set("Content-Type", "application/xml")
+			// w.WriteHeader(http.StatusOK)
+			// xml.NewEncoder(w).Encode(customer)
 			return
 		} else {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(customer)
+			// w.Header().Set("Content-Type", "application/json")
+			// json.NewEncoder(w).Encode(customer)
+			writeResponse(w, http.StatusOK, customer)
 			return
 		}
 	}
 
+}
+
+func writeResponse(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err)
+	}
 }
